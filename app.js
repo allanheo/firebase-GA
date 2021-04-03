@@ -1,69 +1,105 @@
-import * as database from './database.js';
-
-const buildMessageRow = (messageItem) => {
-  const newMessageRow = document.createElement('tr');
-
-  newMessageRow.setAttribute('id', messageItem.id);
-  newMessageRow.innerHTML = `
-    <td>${messageItem.message}</td>
-    <td>${messageItem.votes}</td>
-    <td>
-      <i class="material-icons upvote">thumb_up</i>
-      <i class="material-icons downvote">thumb_down</i>
-      <i class="material-icons delete">delete</i>
-    </td>
-  `;
-
-  // todo: consider using delegation for this instead
-  newMessageRow.querySelector('.upvote').addEventListener('click', async () => {
-    await database.messages.updateVotes(messageItem.id, 1);
-    renderList();
-  });
-  newMessageRow.querySelector('.downvote').addEventListener('click', async () => {
-    await database.messages.updateVotes(messageItem.id, -1);
-    renderList();
-  });
-  newMessageRow.querySelector('.delete').addEventListener('click', async () => {
-    await database.messages.delete(messageItem.id);
-    renderList();
-  });
-
-  return newMessageRow;
+// import { firebaseConfig } from './keys.js';
+const firebaseConfig = {
+  apiKey: "AIzaSyCHooEFfeZIDVMEFFpC3dUaJBXd7OUrMeg",
+  authDomain: "final-project-ga-11caf.firebaseapp.com",
+  projectId: "final-project-ga-11caf",
+  storageBucket: "final-project-ga-11caf.appspot.com",
+  messagingSenderId: "1009678257464",
+  appId: "1:1009678257464:web:5829e82a7d4a548542c5cd",
+  measurementId: "G-2J3HBN3XR6"
 };
 
-const renderList = async () => {
-  const listContainer = document.getElementById('message-container');
+firebase.initializeApp(firebaseConfig);
 
-  // get latest messages
-  const messages = await database.messages.getAll();
-  
-  // reset list container to empty
+const db = firebase.firestore();
+
+
+const getFanMessages = async () => {
+  const data = await db.collection('messages').get();
+
+  // transform to a more useful format
+  // const messages = data.docs.map((doc) => {
+  //   // console.log('doc.data()', doc.data());
+  //   // below combines the document id with all properties returned by doc.data()
+  //   return {
+  //     id: doc.id,
+  //     ...doc.data()
+  //   };
+  // });
+  const messages = [];
+  data.docs.forEach(doc => {
+    messages.push({
+      id: doc.id,
+      ...doc.data()
+    })
+  });
+  // console.log('messages', messages);
+  return messages;
+};
+
+const render = async () => {
+  const listContainer = document.getElementById('message-container');
+  const messages = await getFanMessages();
   listContainer.innerHTML = '';
 
-  // remove children from list container
-  messages.forEach((messageItem) => {
-    const newMessageRow = buildMessageRow(messageItem);
-    listContainer.append(newMessageRow);
+  messages.forEach((messageItem, i) => {
+    listContainer.innerHTML += `<td>${messageItem.message}</td>
+        <td>
+          <i class="material-icons upvote">thumb_up</i>
+          <i class="material-icons downvote">thumb_down</i>
+          <i id="trash${i}" class="material-icons delete" data-id=${messageItem.id}>delete</i>
+        </td>`;
   });
-};
+  addDeleteListeners();
+}
 
+function deleteMessage(id) {
+  // find message whose objectId is equal to the id we're searching with
+  return db.collection('messages').doc(id).delete();
+}
+
+function addDeleteListeners() {
+  let deletes = document.querySelectorAll('.delete');
+  for (let i = 0; i < deletes.length; i++) {
+    deletes[i].addEventListener('click', async (e) => {
+      await deleteMessage(e.target.dataset.id)
+      render();
+    });
+  }
+}
 
 const onLoadHandler = async () => {
-  // initial render of list
-  await renderList();
 
-  document.getElementById('submit').addEventListener('click', async (evt) => {
-    evt.preventDefault();
+  // getFanMessages();
 
-    const newMessageInput = document.getElementById('newmessage');
+  // click listener for submission
+  document.getElementById('message-form').addEventListener('submit', (event) => {
+    // by default a form submit reloads the DOM which will subsequently reload all our JS
+    // to avoid this we preventDefault()
+    event.preventDefault();
 
-    // lets wait for the new message to be created before we request to render the list
-    await database.messages.create(newMessageInput.value);
+    const messageInput = document.getElementById('newmessage');
 
-    renderList();
+    db.collection("messages").add(
+      {
+        message: messageInput.value,
+        votes: 0
+      }
+    ).then(() => {
+      messageInput.value = '';
+    });
 
-    newMessageInput.value = '';
+    // this render after submit
+    render();
+
   });
+  
+
+
+  // On first load
+  render();
+  addDeleteListeners();
+
 };
 
 // Wait for DOM load
