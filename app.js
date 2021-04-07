@@ -122,6 +122,7 @@ const onLoadHandler = async () => {
   render();
   addDeleteListeners();
   console.log(retrieveData(math_url))
+  console.log("hello")
 
 };
 
