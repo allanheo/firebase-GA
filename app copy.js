@@ -13,18 +13,43 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 
+let math_url = 'http://numbersapi.com/random/math?json'
 
-// function renderRows(data) {
+async function retrieveData(url) {
+  try {
+    const rawResponse = await fetch(url);
+
+    if (!rawResponse.ok) {
+      throw new Error(rawResponse.message);
+    }
+
+    if (rawResponse.status === 404) {
+      throw new Error('Not found');
+    }
+
+    const jsonResponse = await rawResponse.json();
+    return jsonResponse;
+  } catch (err) {
+    console.log('err', err);
+  }
+}
+
+
+function renderRows(data) {
   
-//   // Vanilla js way
-//   let question = document.createElement('div');
-//   question.innerHTML = `${data[0].text}`;
-//   document.getElementById('question').appendChild(question);
+  // Vanilla js way
+  let question = document.createElement('div');
+  question.innerHTML = `${data[0].text}`;
+  document.getElementById('question').appendChild(question);
  
-// }
+}
 
 async function init(url) {
-  
+  let promises = [];
+  promises.push(retrieveData(url));
+  const apiData = await Promise.all(promises);
+  console.log(apiData)
+  renderRows(apiData)
 }
 
 const getFanMessages = async () => {
@@ -89,7 +114,7 @@ const onLoadHandler = async () => {
   // getFanMessages();
 
   // click listener for submission
-  document.getElementById('answer-form').addEventListener('submit', (event) => {
+  document.getElementById('message-form').addEventListener('submit', (event) => {
     // by default a form submit reloads the DOM which will subsequently reload all our JS
     // to avoid this we preventDefault()
     event.preventDefault();
@@ -126,4 +151,3 @@ if (document.readyState === 'loading') {
 } else {
   onLoadHandler();
 }
-
