@@ -13,11 +13,13 @@
   <header class="container-fluid text-center">
     <h1>Looking for the Smartest Mathematician!</h1>
     
-    <!-- user id input -->
+    <!-- top form-->
     <div class="row">
       <form class="col s12" id="userid-form">
+        
+        <!-- user id input -->
         <div class="row">
-          <div class="input-field col s6">
+          <div class="input-field col s2">
             <textarea id="userid" class="materialize-textarea"></textarea>
             <label for="userid">User ID</label>
           </div>
@@ -44,7 +46,7 @@
     <div class="row">
       <form class="col s12" id="answer-form">
         
-        
+        <!-- your answer input -->
         <div class="row">
           <div class="input-field col s6">
             <textarea id="newmessage" class="materialize-textarea"></textarea>
@@ -52,7 +54,7 @@
           </div>
         </div>
         
-        
+        <!-- submit button -->
         <div>
           <button class="btn waves-effect waves-light" type="submit" id="submit">Submit
             <i class="material-icons right">send</i>
@@ -60,7 +62,7 @@
         </div>
         
         <br>
-        
+        <!-- show answer button -->
         <div>
           <button class="btn waves-effect waves-light" type="submit" id="show-answer">Show Answer
           </button>
@@ -77,7 +79,10 @@
     <thead>
       <tr>
           <th>Answers</th>
+          <th>Actions</th>
           <th>Votes</th>
+          <th>Actions</th>
+          <th>Actions</th>
       </tr>
     </thead>
     <tbody id="message-container">

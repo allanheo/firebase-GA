@@ -61,11 +61,11 @@ const render = async () => {
         <td>
           <i class="material-icons upvote">thumb_up</i>
           <i class="material-icons downvote">thumb_down</i>
-          
+          <i id="trash${i}" class="material-icons delete" data-id=${messageItem.id}>delete</i>      
         </td>`;
   });
 
-  //<i id="trash${i}" class="material-icons delete" data-id=${messageItem.id}>delete</i>
+  
   addDeleteListeners();
 }
 
