@@ -13,7 +13,7 @@ firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 
-math_url = 'numbersapi.com/random/math'
+let math_url = 'http://numbersapi.com/random/math?json'
 
 async function retrieveData(url) {
   try {
@@ -34,6 +34,12 @@ async function retrieveData(url) {
   }
 }
 
+async function init(url) {
+  let promises = [];
+  promises.push(retrieveData(url));
+  const apiData = await Promise.all(promises);
+  console.log(apiData)
+}
 
 const getFanMessages = async () => {
   const data = await db.collection('messages').get();
@@ -121,8 +127,8 @@ const onLoadHandler = async () => {
   // On first load
   render();
   addDeleteListeners();
-  console.log(retrieveData(math_url))
-  console.log("hello")
+  init(math_url)
+  
 
 };
 
