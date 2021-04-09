@@ -1,7 +1,8 @@
 <html lang="en">
 <head>
-  <title>Are You Smart?</title>
+  <title>Greatest Mathematician</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link rel="stylesheet" href="style.css" media="screen" charset="utf-8">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
@@ -11,7 +12,7 @@
 </head>
 <body>
   <header class="container-fluid text-center">
-    <h1>Looking for the Smartest Mathematician!</h1>
+    <h1>Looking for the Greatest Mathematician!</h1>
     
     <!-- top form-->
     <div class="row">
@@ -20,11 +21,18 @@
         <!-- user id input -->
         <div class="row">
           <div class="input-field col s2">
+            
             <textarea id="userid" class="materialize-textarea"></textarea>
+
             <label for="userid">User ID</label>
+            <div id="login-status"></div>
+            
           </div>
         </div>
+    <div>
+      
 
+    </div>
 <!-- log in button -->
         <div>
           <button class="btn waves-effect waves-light" type="submit" id="id-submit">Log In
@@ -51,6 +59,7 @@
           <div class="input-field col s6">
             <textarea id="newmessage" class="materialize-textarea"></textarea>
             <label for="newmessage">Your Answer</label>
+            <div id="answer-status"></div>
           </div>
         </div>
         
@@ -67,7 +76,9 @@
           <button class="btn waves-effect waves-light" type="submit" id="show-answer">Show Answer
           </button>
         </div>
-
+         
+        <br>
+        <div id="action-status"></div>
 
       </form>
     </div>
@@ -81,8 +92,8 @@
           <th>Answers</th>
           <th>Actions</th>
           <th>Votes</th>
-          <th>Actions</th>
-          <th>Actions</th>
+          <th>Owner</th>
+          
       </tr>
     </thead>
     <tbody id="message-container">

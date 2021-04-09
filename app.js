@@ -12,7 +12,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
-
+let globalUserID = ''
 
 // function renderRows(data) {
   
@@ -23,10 +23,27 @@ const db = firebase.firestore();
  
 // }
 
-async function init(url) {
-  
+async function init() {
+
+  let loginButton = document.getElementById('id-submit');
+  let userID = document.getElementById('userid');
+
+  loginButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    // empty user ID
+    if (userID.value === "") {
+      document.getElementById("login-status").innerHTML = 'User ID cannot be empty'.fontcolor("red")
+    } else {
+      document.getElementById("login-status").innerHTML = 'Logged in as ' + userID.value.bold()
+      globalUserID = userID.value
+      //console.log(globalUserID)
+    } 
+  })
+
 }
 
+
+//------------------------------------------------------------------------------------
 const getFanMessages = async () => {
   const data = await db.collection('messages').get();
 
@@ -51,28 +68,47 @@ const getFanMessages = async () => {
   return messages;
 };
 
+
+//------------------------------------------------------------------------------------
 const render = async () => {
   const listContainer = document.getElementById('message-container');
   const messages = await getFanMessages();
   listContainer.innerHTML = '';
 
   messages.forEach((messageItem, i) => {
-    listContainer.innerHTML += `<td>${messageItem.message}</td>
+    listContainer.innerHTML += `
+        <td>${messageItem.message}
+        </td>
         <td>
-          <i class="material-icons upvote">thumb_up</i>
-          <i class="material-icons downvote">thumb_down</i>
+          <i id="upvote${i}" class="material-icons upvote">thumb_up</i>
+          <i id="downvote${i}" class="material-icons downvote">thumb_down</i>
           <i id="trash${i}" class="material-icons delete" data-id=${messageItem.id}>delete</i>      
-        </td>`;
+        </td>
+        <td>
+          ${messageItem.upVotes}
+        </td>
+        <td>
+          ${messageItem.owner}
+        </td>
+        `;
   });
 
   
   addDeleteListeners();
+  addUpvoteListeners()
 }
-
+//------------------------------------------------------------------------------------
 function deleteMessage(id) {
   // find message whose objectId is equal to the id we're searching with
-  return db.collection('messages').doc(id).delete();
+  console.log(db.collection('messages').doc(id).owner)
+  
+  if (db.collection('messages').doc(id).owner === globalUserID) {
+    return db.collection('messages').doc(id).delete();
+  } else {
+    document.getElementById("action-status").innerHTML = 'You can only delete your own messages'.fontcolor("red")
+  }
 }
+//------------------------------------------------------------------------------------
 
 function addDeleteListeners() {
   let deletes = document.querySelectorAll('.delete');
@@ -84,6 +120,44 @@ function addDeleteListeners() {
   }
 }
 
+//------------------------------------------------------------------------------------
+function upVoteMessage(id, userID) {
+  // find message whose objectId is equal to the id we're searching with
+  return db.collection('messages').doc(id).update({
+    upVotes: firebase.firestore.Fieldvalue.arrayUnion('test')
+  })
+}
+//------------------------------------------------------------------------------------
+
+function addUpvoteListeners() {
+  let upVoteButtons = document.querySelectorAll('.upvote');
+  for (let i = 0; i < upVoteButtons.length; i++) {
+    upVoteButtons[i].addEventListener('click', async (e) => {
+      await upVoteMessage(e.target.dataset.id, globalUserID)
+      render();
+    });
+  }
+}
+
+// //------------------------------------------------------------------------------------
+// function deleteMessage(id) {
+//   // find message whose objectId is equal to the id we're searching with
+//   return db.collection('messages').doc(id).delete();
+// }
+// //------------------------------------------------------------------------------------
+
+// function addDeleteListeners() {
+//   let deletes = document.querySelectorAll('.delete');
+//   for (let i = 0; i < deletes.length; i++) {
+//     deletes[i].addEventListener('click', async (e) => {
+//       await deleteMessage(e.target.dataset.id)
+//       render();
+//     });
+//   }
+// }
+
+
+//------------------------------------------------------------------------------------
 const onLoadHandler = async () => {
 
   // getFanMessages();
@@ -95,19 +169,30 @@ const onLoadHandler = async () => {
     event.preventDefault();
 
     const messageInput = document.getElementById('newmessage');
+    if (globalUserID === '') {
+      document.getElementById("answer-status").innerHTML = 'Must set User ID first'.fontcolor("red")
+    }
 
-    db.collection("messages").add(
-      {
-        message: messageInput.value,
-        votes: 0
-      }
-    ).then(() => {
-      messageInput.value = '';
-    });
+    else if (messageInput.value === '') {
+      document.getElementById("answer-status").innerHTML = 'You cannot submit a blank answer'.fontcolor("red")
+    }
 
-    // this render after submit
-    render();
+    else {
 
+      db.collection("messages").add(
+        {
+          message: messageInput.value,
+          upVotes: [],
+          downVotes: [],
+          owner: globalUserID
+        }
+      ).then(() => {
+        messageInput.value = '';
+      });
+
+      // this render after submit
+      render();
+    }    
   });
   
 
@@ -115,15 +200,15 @@ const onLoadHandler = async () => {
   // On first load
   render();
   addDeleteListeners();
-  init(math_url)
+  addUpvoteListeners()
+  init()
   
 
 };
-
+//------------------------------------------------------------------------------------
 // Wait for DOM load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', onLoadHandler);
 } else {
   onLoadHandler();
 }
-
